@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 const blank_response = {
   version: "1.0",
@@ -111,13 +111,13 @@ const note_response = (options) => {
 
 exports.handler = function(event, context, callback) {
   if (event.request.type === "AudioPlayer.PlaybackNearlyFinished") {
-    return callback(null, note_response({ note: event.request.token, enqueue: true }, false));
+    return callback(null, note_response({ note: event.request.token, enqueue: true }));
   }
 
   const intent = (event.request.intent || {}).name;
   if (event.request.type === "LaunchRequest" || intent === "PlayNoteIntent") {
     const note = ((((event.request.intent || {}).slots || {})["Note"] || {}).value || "").toLowerCase() || "low e";
-    return callback(null, note_response({ note: note, include_output_speech: true }));
+    return callback(null, note_response({ note: note }));
   } else if (event.request.type === "AudioPlayer.PlaybackStopped" || intent === "AMAZON.PauseIntent") {
     return callback(null, quit_response);
   } else {
