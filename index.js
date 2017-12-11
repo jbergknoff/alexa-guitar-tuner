@@ -1,33 +1,62 @@
 "use strict";
 
-const blank_response = {
-  version: "1.0",
-  response: {}
-};
+// options: object with
+//    text: optional string to be spoken
+//    note: optional object with
+//      name: required string (key into `note_references`)
+//      enqueue: optional boolean, whether to enqueue or play immediately
+//    end_session: optional boolean
+//    pause: optional boolean, whether to pause playing audio
+const generate_alexa_response = (options) => {
+  options = options || {};
 
-const quit_response = {
-  version: "1.0",
-  response: {
-    shouldEndSession: true,
-    directives: [
+  const alexa_response = {
+    version: "1.0",
+    response: {
+      directives: []
+    }
+  };
+
+  if (options.text) {
+    alexa_response.response.outputSpeech = {
+      type: "PlainText",
+      text: options.speech
+    };
+  }
+
+  if (options.end_session) {
+    alexa_response.response.shouldEndSession = true;
+  }
+
+  if (options.note) {
+    const note_details = note_references[options.note];
+    alexa_response.response.directives.push(
+      {
+        type: "AudioPlayer.Play",
+        playBehavior: options.note.enqueue ? "ENQUEUE" : "REPLACE_ALL",
+        audioItem: {
+          stream: {
+            token: options.note.name,
+            expectedPreviousToken: options.note.enqueue ? options.note.name : null,
+            url: note_details.url,
+            offsetInMilliseconds: note_details.offset_in_milliseconds
+          }
+        }
+      }
+    );
+  }
+
+  if (options.pause) {
+    alexa_response.sessionAttributes = { "paused": true };
+    alexa_response.response.directives.push(
       {
         type: "AudioPlayer.ClearQueue",
         clearBehavior: "CLEAR_ALL"
       }
-    ]
+    );
   }
-};
 
-const spoken_response = (text) => {
-  return {
-    version: "1.0",
-    response: {
-      outputSpeech: {
-        type: "PlainText",
-        text: text
-      }
-    }
-  };
+  return alexa_response;
 };
 
 const note_references = {
@@ -66,64 +95,53 @@ const note_references = {
 
 note_references["e"] = note_references["low e"];
 
-// options: object with
-//    note: required string (key into `note_references`)
-//    enqueue: optional boolean, whether to enqueue or play immediately
-const note_response = (options) => {
+const play_note = (note_name, callback) => {
   const note_details = note_references[options.note];
-
   if (!note_details) {
-    return spoken_response(`I don't know how to play ${options.note}`);
+    return callback(null, generate_alexa_response({ text: `I don't know how to play ${note_name}`, stop_audio: true, end_session: true }));
   }
 
-  const alexa_response = {
-    version: "1.0",
-    sessionAttributes: {
-      playing: true
-    },
-    response: {
-      directives: [
-        {
-          type: "AudioPlayer.Play",
-          playBehavior: options.enqueue ? "ENQUEUE" : "REPLACE_ALL",
-          audioItem: {
-            stream: {
-              token: options.note,
-              expectedPreviousToken: options.enqueue ? options.note : null,
-              url: note_details.url,
-              offsetInMilliseconds: note_details.offset_in_milliseconds
-            }
-          }
-        }
-      ]
+  const response = generate_alexa_response(
+    {
+      text: `Playing ${note_details.article || "a"} ${note_details.name} string`,
+      note: {
+        name: note_name
+      }
     }
-  };
+  );
 
-  if (!options.enqueue) {
-    alexa_response.response.outputSpeech = {
-      type: "PlainText",
-      text: `Playing ${note_details.article || "a"} ${note_details.name} string`
-    };
-  }
-
-  return alexa_response;
+  return callback(null, response);
 };
 
 exports.handler = function(event, context, callback) {
   console.log(`[handler] Incoming event type ${event.request.type}: ${JSON.stringify(event)}`);
   if (event.request.type === "AudioPlayer.PlaybackNearlyFinished") {
-    return callback(null, note_response({ note: event.request.token, enqueue: true }));
+    if ((event.session.attributes || {}).paused) {
+      return callback(null, generate_alexa_response());
+    }
+
+    const response = generate_alexa_response(
+      {
+        note: {
+          name: event.request.token,
+          enqueue: true
+        }
+      }
+    );
+
+    return callback(null, response);
   }
 
   const intent = (event.request.intent || {}).name;
   if (event.request.type === "LaunchRequest" || intent === "PlayNoteIntent") {
-    const note = ((((event.request.intent || {}).slots || {})["Note"] || {}).value || "").toLowerCase() || "low e";
-    return callback(null, note_response({ note: note }));
+    const note_name = ((((event.request.intent || {}).slots || {})["Note"] || {}).value || "").toLowerCase() || "low e";
+    return play_note(note_name, callback);
   } else if (intent === "AMAZON.PauseIntent") {
-    return callback(null, spoken_response("Okay"));
+    return callback(null, generate_alexa_response({ text: "Okay", pause: true }));
   } else if (intent === "AMAZON.ResumeIntent") {
-    return callback(null, note_response({ note: (event.context.AudioPlayer || {}).token || "low e" }));
+    const note_name = (event.context.AudioPlayer || {}).token || "low e";
+    return play_note(note_name, callback);
   } else {
-    return callback(null, blank_response);
+    return callback(null, generate_alexa_response());
   }
 };
