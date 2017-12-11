@@ -110,6 +110,7 @@ const note_response = (options) => {
 };
 
 exports.handler = function(event, context, callback) {
+  console.log(`[handler] Incoming event type ${event.request.type}: ${JSON.stringify(event)}`);
   if (event.request.type === "AudioPlayer.PlaybackNearlyFinished") {
     return callback(null, note_response({ note: event.request.token, enqueue: true }));
   }
