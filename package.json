@@ -1,0 +1,11 @@
+{
+  "name": "alexa-guitar-tuner",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jbergknoff/alexa-guitar-tuner"
+  },
+  "scripts": {
+    "test": "echo ok"
+  }
+}
