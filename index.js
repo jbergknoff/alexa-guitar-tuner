@@ -119,8 +119,10 @@ exports.handler = function(event, context, callback) {
   if (event.request.type === "LaunchRequest" || intent === "PlayNoteIntent") {
     const note = ((((event.request.intent || {}).slots || {})["Note"] || {}).value || "").toLowerCase() || "low e";
     return callback(null, note_response({ note: note }));
-  } else if (event.request.type === "AudioPlayer.PlaybackStopped" || intent === "AMAZON.PauseIntent") {
-    return callback(null, quit_response);
+  } else if (intent === "AMAZON.PauseIntent") {
+    return callback(null, spoken_response("Okay"));
+  } else if (intent === "AMAZON.ResumeIntent") {
+    return callback(null, note_response({ note: (event.context.AudioPlayer || {}).token || "low e" }));
   } else {
     return callback(null, blank_response);
   }
