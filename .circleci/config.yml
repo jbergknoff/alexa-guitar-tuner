@@ -38,4 +38,4 @@ workflows:
             - test-job
           filters:
             branches:
-              only: ci
+              only: master
