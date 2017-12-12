@@ -47,7 +47,6 @@ const generate_alexa_response = (options) => {
   }
 
   if (options.pause) {
-    alexa_response.sessionAttributes = { paused: true };
     alexa_response.response.directives.push(
       {
         type: "AudioPlayer.ClearQueue",
@@ -119,17 +118,23 @@ const play_note = (note_name, callback) => {
   return callback(null, response);
 };
 
+const unimplemented_intents = [
+  "AMAZON.LoopOffIntent",
+  "AMAZON.LoopOnIntent",
+  "AMAZON.NextIntent",
+  "AMAZON.PreviousIntent",
+  "AMAZON.RepeatIntent",
+  "AMAZON.ShuffleOffIntent",
+  "AMAZON.ShuffleOnIntent",
+  "AMAZON.StartOverIntent"
+];
+
 exports.handler = (event, context, callback) => {
   console.log(`[handler] Incoming event type ${event.request.type}: ${JSON.stringify(event)}`);
 
   const cb = (e, r) => { if (r) { console.log(`[handler] responding with ${JSON.stringify(r)}`); } callback(e, r); };
 
   if (event.request.type === "AudioPlayer.PlaybackNearlyFinished") {
-    if (((event.session || {}).attributes || {}).paused) {
-      console.log("[handler] The paused session attribute is actually used here");
-      return cb(null, generate_alexa_response());
-    }
-
     const response = generate_alexa_response(
       {
         note: {
@@ -146,11 +151,13 @@ exports.handler = (event, context, callback) => {
   if (event.request.type === "LaunchRequest" || intent === "PlayNoteIntent") {
     const note_name = ((((event.request.intent || {}).slots || {})["Note"] || {}).value || "").toLowerCase() || "low e";
     return play_note(note_name, cb);
-  } else if (intent === "AMAZON.PauseIntent") {
+  } else if (intent === "AMAZON.PauseIntent" || intent === "AMAZON.CancelIntent") {
     return cb(null, generate_alexa_response({ text: "Okay", pause: true, end_session: true }));
   } else if (intent === "AMAZON.ResumeIntent") {
     const note_name = (event.context.AudioPlayer || {}).token || "low e";
     return play_note(note_name, cb);
+  } else if (unimplemented_intents.includes(intent)) {
+    return cb(null, generate_alexa_response({ text: "Sorry, that functionality hasn't been implemented" });
   } else {
     return cb(null, generate_alexa_response({ end_session: true }));
   }
