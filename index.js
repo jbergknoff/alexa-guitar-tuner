@@ -157,7 +157,7 @@ exports.handler = (event, context, callback) => {
     const note_name = (event.context.AudioPlayer || {}).token || "low e";
     return play_note(note_name, cb);
   } else if (unimplemented_intents.includes(intent)) {
-    return cb(null, generate_alexa_response({ text: "Sorry, that functionality hasn't been implemented" });
+    return cb(null, generate_alexa_response({ text: "Sorry, that functionality hasn't been implemented" }));
   } else {
     return cb(null, generate_alexa_response({ end_session: true }));
   }
