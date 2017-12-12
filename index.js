@@ -106,7 +106,8 @@ const play_note = (note_name, callback) => {
       text: `Playing ${note_details.article || "a"} ${note_details.name} string`,
       note: {
         name: note_name
-      }
+      },
+      end_session: true
     }
   );
 
@@ -140,11 +141,11 @@ exports.handler = (event, context, callback) => {
     const note_name = ((((event.request.intent || {}).slots || {})["Note"] || {}).value || "").toLowerCase() || "low e";
     return play_note(note_name, cb);
   } else if (intent === "AMAZON.PauseIntent") {
-    return cb(null, generate_alexa_response({ text: "Okay", pause: true }));
+    return cb(null, generate_alexa_response({ text: "Okay", pause: true, end_session: true }));
   } else if (intent === "AMAZON.ResumeIntent") {
     const note_name = (event.context.AudioPlayer || {}).token || "low e";
     return play_note(note_name, cb);
   } else {
-    return cb(null, generate_alexa_response());
+    return cb(null, generate_alexa_response({ end_session: true }));
   }
 };
