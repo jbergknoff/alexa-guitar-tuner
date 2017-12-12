@@ -6,6 +6,6 @@
     "url": "https://github.com/jbergknoff/alexa-guitar-tuner"
   },
   "scripts": {
-    "test": "echo ok"
+    "test": "node test.js"
   }
 }

@@ -29,7 +29,7 @@ const generate_alexa_response = (options) => {
   }
 
   if (options.note) {
-    const note_details = note_references[options.note];
+    const note_details = note_references[options.note.name];
     alexa_response.response.directives.push(
       {
         type: "AudioPlayer.Play",
@@ -96,7 +96,7 @@ const note_references = {
 note_references["e"] = note_references["low e"];
 
 const play_note = (note_name, callback) => {
-  const note_details = note_references[options.note];
+  const note_details = note_references[note_name];
   if (!note_details) {
     return callback(null, generate_alexa_response({ text: `I don't know how to play ${note_name}`, stop_audio: true, end_session: true }));
   }
@@ -113,7 +113,7 @@ const play_note = (note_name, callback) => {
   return callback(null, response);
 };
 
-exports.handler = function(event, context, callback) {
+exports.handler = (event, context, callback) => {
   console.log(`[handler] Incoming event type ${event.request.type}: ${JSON.stringify(event)}`);
   if (event.request.type === "AudioPlayer.PlaybackNearlyFinished") {
     if ((event.session.attributes || {}).paused) {
