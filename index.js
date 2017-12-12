@@ -94,6 +94,11 @@ const note_references = {
 };
 
 note_references["e"] = note_references["low e"];
+note_references["e."] = note_references["low e"];
+note_references["a."] = note_references["a"];
+note_references["d."] = note_references["d"];
+note_references["g."] = note_references["g"];
+note_references["b."] = note_references["b"];
 
 const play_note = (note_name, callback) => {
   const note_details = note_references[note_name];
