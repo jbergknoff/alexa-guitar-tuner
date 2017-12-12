@@ -126,6 +126,7 @@ exports.handler = (event, context, callback) => {
 
   if (event.request.type === "AudioPlayer.PlaybackNearlyFinished") {
     if (((event.session || {}).attributes || {}).paused) {
+      console.log("[handler] The paused session attribute is actually used here");
       return cb(null, generate_alexa_response());
     }
 
