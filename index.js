@@ -119,7 +119,7 @@ exports.handler = (event, context, callback) => {
   const cb = (e, r) => { if (r) { console.log(`[handler] responding with ${JSON.stringify(r)}`); } callback(e, r); };
 
   if (event.request.type === "AudioPlayer.PlaybackNearlyFinished") {
-    if ((event.session.attributes || {}).paused) {
+    if (((event.session || {}).attributes || {}).paused) {
       return cb(null, generate_alexa_response());
     }
 
