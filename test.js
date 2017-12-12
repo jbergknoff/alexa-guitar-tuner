@@ -18,7 +18,8 @@ guitar_tuner.handler(
 	(error, result) => {
 		assert(!error);
 		assert(result);
-		assert(result.response.directives.length === 1);
-		assert(result.response.directives[0].audioItem.stream.token === "b");
+		assert.equal(result.response.directives.length, 1);
+		assert.equal(result.response.outputSpeech.text, "Playing a b string")
+		assert.equal(result.response.directives[0].audioItem.stream.token, "b");
 	}
 );

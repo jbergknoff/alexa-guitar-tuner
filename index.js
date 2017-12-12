@@ -20,7 +20,7 @@ const generate_alexa_response = (options) => {
   if (options.text) {
     alexa_response.response.outputSpeech = {
       type: "PlainText",
-      text: options.speech
+      text: options.text
     };
   }
 
@@ -47,7 +47,7 @@ const generate_alexa_response = (options) => {
   }
 
   if (options.pause) {
-    alexa_response.sessionAttributes = { "paused": true };
+    alexa_response.sessionAttributes = { paused: true };
     alexa_response.response.directives.push(
       {
         type: "AudioPlayer.ClearQueue",
@@ -115,9 +115,12 @@ const play_note = (note_name, callback) => {
 
 exports.handler = (event, context, callback) => {
   console.log(`[handler] Incoming event type ${event.request.type}: ${JSON.stringify(event)}`);
+
+  const cb = (e, r) => { if (r) { console.log(`[handler] responding with ${JSON.stringify(r)}`); } callback(e, r); };
+
   if (event.request.type === "AudioPlayer.PlaybackNearlyFinished") {
     if ((event.session.attributes || {}).paused) {
-      return callback(null, generate_alexa_response());
+      return cb(null, generate_alexa_response());
     }
 
     const response = generate_alexa_response(
@@ -129,19 +132,19 @@ exports.handler = (event, context, callback) => {
       }
     );
 
-    return callback(null, response);
+    return cb(null, response);
   }
 
   const intent = (event.request.intent || {}).name;
   if (event.request.type === "LaunchRequest" || intent === "PlayNoteIntent") {
     const note_name = ((((event.request.intent || {}).slots || {})["Note"] || {}).value || "").toLowerCase() || "low e";
-    return play_note(note_name, callback);
+    return play_note(note_name, cb);
   } else if (intent === "AMAZON.PauseIntent") {
-    return callback(null, generate_alexa_response({ text: "Okay", pause: true }));
+    return cb(null, generate_alexa_response({ text: "Okay", pause: true }));
   } else if (intent === "AMAZON.ResumeIntent") {
     const note_name = (event.context.AudioPlayer || {}).token || "low e";
-    return play_note(note_name, callback);
+    return play_note(note_name, cb);
   } else {
-    return callback(null, generate_alexa_response());
+    return cb(null, generate_alexa_response());
   }
 };
