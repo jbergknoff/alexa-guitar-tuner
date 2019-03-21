@@ -3,7 +3,7 @@ version: 2
 jobs:
   test-job:
     docker:
-      - image: mhart/alpine-node:6.12.2
+      - image: mhart/alpine-node:8
 
     steps:
       - checkout
