@@ -2,6 +2,8 @@
 
 This is an Alexa Skill which plays a guitar string on repeat to help you tune your guitar. Only strings from standard tuning (EADGBe) are currently supported.
 
+Available here: https://www.amazon.com/Jonathan-Bergknoff-Guitar-Tuner/dp/B078319W4Y
+
 ## Example Usage
 
 * *Alexa, open guitar tuner* (plays low E string on repeat)
