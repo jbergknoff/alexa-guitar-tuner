@@ -57,7 +57,7 @@ resource "aws_lambda_function" "alexa_guitar_tuner" {
   function_name = "alexa-guitar-tuner"
   role = "${aws_iam_role.lambda_role.arn}"
   handler = "index.handler"
-  runtime = "nodejs10.x"
+  runtime = "nodejs14.x"
   filename = "${var.zip_filename}"
   source_code_hash = "${base64sha256(file(var.zip_filename))}"
 }
